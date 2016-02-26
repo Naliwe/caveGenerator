@@ -44,10 +44,10 @@ public class MeshGenerator : MonoBehaviour
         int tileAmount = 10;
         Vector2[] uvs = new Vector2[vertices.Count];
 
-        for ( int i = 0; i < vertices.Count; i++ )
+        for (int i = 0; i < vertices.Count; i++)
         {
-            float percentX = Mathf.InverseLerp( -map.GetLength( 0 ) / 2 * squareSize,
-                                                map.GetLength( 0 ) / 2 * squareSize, vertices[i].x ) * tileAmount;
+            float percentX = Mathf.InverseLerp(-map.GetLength(0) / 2 * squareSize,
+                                                map.GetLength(0) / 2 * squareSize, vertices[i].x) * tileAmount;
             float percentY = Mathf.InverseLerp(-map.GetLength(0) / 2 * squareSize,
                                                 map.GetLength(0) / 2 * squareSize, vertices[i].z) * tileAmount;
 
@@ -56,7 +56,7 @@ public class MeshGenerator : MonoBehaviour
 
         mesh.uv = uvs;
 
-        if ( is2d )
+        if (is2d)
             Generate2DColliders();
         else
             CreateWallMesh();
@@ -66,19 +66,19 @@ public class MeshGenerator : MonoBehaviour
     {
         EdgeCollider2D[] currentColliders = gameObject.GetComponents<EdgeCollider2D>();
 
-        for ( int i = 0; i < currentColliders.Length; i++ )
+        for (int i = 0; i < currentColliders.Length; i++)
         {
-            Destroy( currentColliders[i] );
+            Destroy(currentColliders[i]);
         }
 
         CalculateMeshOutlines();
 
-        foreach ( List<int> outline in outlines )
+        foreach (List<int> outline in outlines)
         {
-            EdgeCollider2D edgeCollider2D = gameObject.AddComponent < EdgeCollider2D>();
+            EdgeCollider2D edgeCollider2D = gameObject.AddComponent<EdgeCollider2D>();
             Vector2[] edgePoints = new Vector2[outline.Count];
 
-            for ( int i = 0; i < outline.Count; i++ )
+            for (int i = 0; i < outline.Count; i++)
                 edgePoints[i] = new Vector2(vertices[outline[i]].x, vertices[outline[i]].z);
             edgeCollider2D.points = edgePoints;
         }
