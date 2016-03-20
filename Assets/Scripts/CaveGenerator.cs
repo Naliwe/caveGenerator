@@ -1,17 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class CaveGenerator : MonoBehaviour
+public class CaveGenerator
 {
-    private LevelMap _map;
+  private LevelMap _map;
 
-    void Start()
-    {
-
-    }
-
-    void Update()
-    {
-
-    }
+  public CaveGenerator(int[,] middle)
+  {
+    _map = new LevelMap(middle, 10);
+  }
 }

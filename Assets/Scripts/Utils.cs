@@ -51,22 +51,6 @@ public class Cell : IEquatable<Cell>
     public Coord Position { get; set; }
     public int Type { get; set; }
 
-    public List<Cell> Neighbors
-    {
-        get
-        {
-            List<Cell> ret = new List<Cell>
-                             {
-                                 new Cell( new Coord( Position.tileX - 1, Position.tileY ) ),
-                                 new Cell( new Coord( Position.tileX + 1, Position.tileY ) ),
-                                 new Cell( new Coord( Position.tileX, Position.tileY - 1 ) ),
-                                 new Cell( new Coord( Position.tileX, Position.tileY + 1 ) ),
-                             };
-
-            return (ret);
-        }
-    }
-
     public Cell(Coord position)
     {
         Position = position;
