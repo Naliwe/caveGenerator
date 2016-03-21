@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="17fab3e9-b55a-4180-a100-b65a89d3efc0" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Assets/Scripts/CaveGenerator.cs" afterPath="$PROJECT_DIR$/Assets/Scripts/CaveGenerator.cs" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Assets/Scripts/Utils.cs" afterPath="$PROJECT_DIR$/Assets/Scripts/Utils.cs" />
-    </list>
+    <list default="true" id="17fab3e9-b55a-4180-a100-b65a89d3efc0" name="Default" comment="" />
     <ignored path="CaveGenerator.iws" />
     <ignored path=".idea/workspace.xml" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
