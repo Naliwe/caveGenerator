@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿using System;
 using UnityEngine;
 using System.Collections.Generic;
@@ -29,4 +30,17 @@ public class CaveGenerator
             // TODO: call CA
         }
     }
+=======
+﻿using UnityEngine;
+using System.Collections;
+
+public class CaveGenerator
+{
+  private LevelMap _map;
+
+  public CaveGenerator(int[,] middle)
+  {
+    _map = new LevelMap(middle, 10);
+  }
+>>>>>>> 071722b368a0f1b77fb7b1f16d2fa98e964ae1ab
 }
