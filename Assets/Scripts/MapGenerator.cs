@@ -61,6 +61,15 @@ public class MapGenerator : MonoBehaviour
 
         MeshGenerator meshGen = GetComponent<MeshGenerator>();
         meshGen.GenerateMesh(borderedMap, 1);
+
+
+        List<Cell> map1D = new List<Cell>();
+
+        for (int i = 0 ; i < borderedMap.GetLength( 0 ) ; i++)
+            for (int j = 0 ; j < borderedMap.GetLength( 1 ) ; j++)
+                map1D.Add( new Cell( new Coord(i, j)) );
+
+        CaveGenerator caveGenerator = new CaveGenerator( 5, map1D );
     }
 
     void ProcessMap()
