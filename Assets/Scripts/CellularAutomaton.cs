@@ -8,7 +8,6 @@ public class CellularAutomaton
 {
     #region DefaultSelectors
 
-    public static readonly Predicate<Cell> All = cell => true;
     public static readonly Predicate<Cell> Black = cell => cell.Type == 1;
 
     #endregion
@@ -37,7 +36,7 @@ public class CellularAutomaton
                 continue;
             var target = _pickTarget( cell );
 
-            if ( target != null && _map.Map.Contains( target ) )
+            if ( target != null )
                 cell.GrowTo( target );
         }
     }

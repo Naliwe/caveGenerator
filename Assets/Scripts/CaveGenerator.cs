@@ -7,6 +7,8 @@ using Random = System.Random;
 public class CaveGenerator
 {
     private int _caveHeight;
+    private int _caveWidth;
+    private int _caveDepth;
 
     private LevelMap _map;
     private CellularAutomaton _ca;
@@ -14,6 +16,9 @@ public class CaveGenerator
     public CaveGenerator(int height, int[,] mapBase)
     {
         _caveHeight = height * 2;
+        _caveWidth = mapBase.GetLength(0);
+        _caveDepth = mapBase.GetLength(1);
+
         _map = new LevelMap(mapBase, _caveHeight);
 
         var random = new Random();
@@ -26,7 +31,7 @@ public class CaveGenerator
 
     public LevelMap Generate()
     {
-        for (int i = (_caveHeight / 2) + 1, j = (_caveHeight / 2) - 1; i < _caveHeight; ++i, --j)
+        for (int i = (_caveHeight / 2) + 1, j = (_caveHeight / 2) - 1; i <= _caveHeight; ++i, --j)
         {
             for (int x = 0; x < _map.Width; x++)
                 for (int z = 0; z < _map.Depth; z++)

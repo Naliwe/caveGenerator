@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/CaveGenerator.sln.iml" filepath="$PROJECT_DIR$/CaveGenerator.sln.iml" />
+      <module fileurl="file://$PROJECT_DIR$/caveGenerator.sln.iml" filepath="$PROJECT_DIR$/caveGenerator.sln.iml" />
     </modules>
   </component>
 </project>
