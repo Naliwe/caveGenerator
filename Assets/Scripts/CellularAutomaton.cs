@@ -13,22 +13,23 @@ public class CellularAutomaton
 
     #endregion
 
-    private Predicate<Cell> _selector, _canGrow;
-
     public delegate Cell PickTarget( Cell origin );
 
+    private Predicate<Cell> _selector, _canGrow;
     private PickTarget _pickTarget;
+    private LevelMap _map;
 
-    public CellularAutomaton( Predicate<Cell> selector, Predicate<Cell> canGrow, PickTarget pickTarget )
+    public CellularAutomaton( LevelMap map, Predicate<Cell> selector, Predicate<Cell> canGrow, PickTarget pickTarget )
     {
+        _map = map;
         _selector = selector;
         _pickTarget = pickTarget;
         _canGrow = canGrow;
     }
 
-    public void Process( List<Cell> map )
+    public void Process( int height )
     {
-        var selectedCells = map.Where( e => _selector( e ) );
+        var selectedCells = _map.Map.Where( e => _selector( e ) && e.Position.tileY == height );
 
         foreach ( var cell in selectedCells )
         {
@@ -36,20 +37,24 @@ public class CellularAutomaton
                 continue;
             var target = _pickTarget( cell );
 
-            if ( map.Contains( target ) )
-                cell.GrowTo( map.Find( t => t.Equals( target ) ) );
+            if ( target != null && _map.Map.Contains( target ) )
+                cell.GrowTo( target );
         }
     }
 
-    public List<Cell> GetNeighbors( List<Cell> map, Cell cell )
+    public IEnumerable<Cell> GetNeighbors( Cell cell )
     {
-        return ( from c in map
-                 where ( c.Position.tileX == cell.Position.tileX - 1 && c.Position.tileY == cell.Position.tileY
-                         || c.Position.tileX == cell.Position.tileX + 1 && c.Position.tileY == cell.Position.tileY
-                         || c.Position.tileX == cell.Position.tileX && c.Position.tileY == cell.Position.tileY - 1
-                         || c.Position.tileX == cell.Position.tileX && c.Position.tileY == cell.Position.tileY + 1 )
+        return ( from c in _map.Map
+                 where
+                     ( c.Position.tileX == cell.Position.tileX - 1 && c.Position.tileZ == cell.Position.tileZ &&
+                       c.Position.tileY == cell.Position.tileY ||
+                       c.Position.tileX == cell.Position.tileX + 1 && c.Position.tileZ == cell.Position.tileZ &&
+                       c.Position.tileY == cell.Position.tileY ||
+                       c.Position.tileX == cell.Position.tileX && c.Position.tileZ == cell.Position.tileZ - 1 &&
+                       c.Position.tileY == cell.Position.tileY ||
+                       c.Position.tileX == cell.Position.tileX && c.Position.tileZ == cell.Position.tileZ + 1 &&
+                       c.Position.tileY == cell.Position.tileY )
                  select c
-               ) as List<Cell>;
-
+               );
     }
 }

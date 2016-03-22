@@ -2,154 +2,215 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Policy;
+using UnityEngine.UI;
 
 public class LevelMap
 {
-  private Dictionary<int, List<Cell>> _map;
+    private List<Cell> _map;
 
-  public int Height { get; set; }
+    public List<Cell> Map
+    {
+        get { return _map; }
+    }
 
-  public LevelMap(int height)
-  {
-    Height = height;
-    _map = new Dictionary<int, List<Cell>>();
-  }
+    public int Height { get; set; }
+    public int Width { get; set; }
+    public int Depth { get; set; }
 
-  public LevelMap(int[,] rawMap, int height)
-  {
-    Height = height;
+    public LevelMap(int depth, int width, int height)
+    {
+        Height = height * 2;
+        Width = width;
+        Depth = depth;
 
-    List<Cell> tmp = new List<Cell>();
+        _map = new List<Cell>(Height * Width * Depth);
+    }
 
-    for (int x = 0; x < rawMap.GetLength(0); x++)
-      for (int y = 0; y < rawMap.GetLength(1); y++)
-        tmp.Add(new Cell(new Coord(x, y)));
+    public LevelMap(int[,] rawMap, int height)
+    {
+        Height = height;
+        Width = rawMap.GetLength(0);
+        Depth = rawMap.GetLength(1);
 
-    _map[0] = tmp;
-  }
+        _map = new List<Cell>(Height * Width * Depth);
 
-  public List<Cell> this[int layer]
-  {
-    get { return _map[layer]; }
-    set { _map[layer] = new List<Cell>(value); }
-  }
+        for (int x = 0; x < rawMap.GetLength(0); x++)
+            for (int z = 0; z < rawMap.GetLength(1); z++)
+                Map.Add(new Cell(x, Height / 2, z, rawMap[x, z]));
+    }
+
+    public Cell this[int x, int y, int z]
+    {
+        get
+        { return _map.FirstOrDefault( c => c.Position.tileX == x && c.Position.tileY == y && c.Position.tileZ == z ); }
+    }
 }
 
-public struct Coord
+public class Coord : IEquatable<Coord>
 {
-  public int tileX;
-  public int tileY;
+    public override int GetHashCode()
+    {
+        unchecked
+        {
+            var hashCode = tileX;
+            hashCode = (hashCode * 397) ^ tileY;
+            hashCode = (hashCode * 397) ^ tileZ;
+            return hashCode;
+        }
+    }
 
-  public Coord(int x, int y)
-  {
-    tileX = x;
-    tileY = y;
-  }
+    public int tileX;
+    public int tileY;
+    public int tileZ;
+
+    public Coord(int x = 0, int y = 0, int z = 0)
+    {
+        tileX = x;
+        tileY = y;
+        tileZ = z;
+    }
+
+    public override bool Equals(object other)
+    {
+        return (this.Equals(other as Coord));
+    }
+
+    public bool Equals(Coord other)
+    {
+        return (tileX == other.tileX &&
+                 tileY == other.tileY &&
+                 tileZ == other.tileZ);
+    }
+
+    public static bool operator ==(Coord left, Coord right)
+    {
+        return ((left != null && right != null) && (left.tileX == right.tileX &&
+                                                        left.tileY == right.tileY &&
+                                                        left.tileZ == right.tileZ));
+    }
+
+    public static bool operator !=(Coord left, Coord right)
+    {
+        return !(left == right);
+    }
 }
 
 public class Cell : IEquatable<Cell>
 {
-  public Coord Position { get; set; }
-  public int Type { get; set; }
+    public Coord Position { get; set; }
+    public int Type { get; set; }
 
-  public Cell(Coord position)
-  {
-    Position = position;
-  }
+    public Cell(Coord position, int type = 0)
+    {
+        Position = position;
+        Type = type;
+    }
 
-  public void GrowTo(Cell other)
-  {
-    other.Type = this.Type;
-  }
+    public Cell(int x = 0, int y = 0, int z = 0, int type = 0)
+    {
+        Position = new Coord(x, y, z);
+        Type = type;
+    }
 
-  public override bool Equals(object other)
-  {
-    return (this.Equals(other as Cell));
-  }
+    public Cell(Cell other)
+    {
+        Position = other.Position;
+        Type = other.Type;
+    }
 
-  public override int GetHashCode()
-  {
-    return (Position.GetHashCode()*397) ^ Type;
-  }
+    public void GrowTo(Cell other)
+    {
+        other.Type = this.Type;
+    }
 
-  public bool Equals(Cell other)
-  {
-    return (Position.tileX == other.Position.tileX &&
-            Position.tileY == other.Position.tileY);
-  }
+    public override bool Equals(object other)
+    {
+        return (this.Equals(other as Cell));
+    }
+
+    public override int GetHashCode()
+    {
+        return (Position.GetHashCode() * 397) ^ Type;
+    }
+
+    public bool Equals(Cell other)
+    {
+        return (Position.tileX == other.Position.tileX &&
+                 Position.tileY == other.Position.tileY &&
+                 Position.tileZ == other.Position.tileZ);
+    }
 }
 
 
 public class Room : IComparable<Room>
 {
-  public List<Coord> tiles;
-  public List<Coord> edgeTiles;
-  public List<Room> connectedRooms;
-  public int roomSize;
-  public bool isAccessibleFromMainRoom;
-  public bool isMainRoom;
+    public List<Coord> tiles;
+    public List<Coord> edgeTiles;
+    public List<Room> connectedRooms;
+    public int roomSize;
+    public bool isAccessibleFromMainRoom;
+    public bool isMainRoom;
 
-  public Room()
-  {
-  }
+    public Room() { }
 
-  public Room(List<Coord> roomTiles, int[,] map)
-  {
-    tiles = roomTiles;
-    roomSize = tiles.Count;
-    connectedRooms = new List<Room>();
-
-    edgeTiles = new List<Coord>();
-    foreach (Coord tile in tiles)
+    public Room(List<Coord> roomTiles, int[,] map)
     {
-      for (int x = tile.tileX - 1; x <= tile.tileX + 1; x++)
-      {
-        for (int y = tile.tileY - 1; y <= tile.tileY + 1; y++)
+        tiles = roomTiles;
+        roomSize = tiles.Count;
+        connectedRooms = new List<Room>();
+
+        edgeTiles = new List<Coord>();
+        foreach (Coord tile in tiles)
         {
-          if (x == tile.tileX || y == tile.tileY)
-          {
-            if (map[x, y] == 1)
+            for (int x = tile.tileX - 1; x <= tile.tileX + 1; x++)
             {
-              edgeTiles.Add(tile);
+                for (int y = tile.tileY - 1; y <= tile.tileY + 1; y++)
+                {
+                    if (x == tile.tileX || y == tile.tileY)
+                    {
+                        if (map[x, y] == 1)
+                        {
+                            edgeTiles.Add(tile);
+                        }
+                    }
+                }
             }
-          }
         }
-      }
     }
-  }
 
-  public void SetAccessibleFromMainRoom()
-  {
-    if (!isAccessibleFromMainRoom)
+    public void SetAccessibleFromMainRoom()
     {
-      isAccessibleFromMainRoom = true;
-      foreach (Room connectedRoom in connectedRooms)
-      {
-        connectedRoom.SetAccessibleFromMainRoom();
-      }
+        if (!isAccessibleFromMainRoom)
+        {
+            isAccessibleFromMainRoom = true;
+            foreach (Room connectedRoom in connectedRooms)
+            {
+                connectedRoom.SetAccessibleFromMainRoom();
+            }
+        }
     }
-  }
 
-  public static void ConnectRooms(Room roomA, Room roomB)
-  {
-    if (roomA.isAccessibleFromMainRoom)
-      roomB.SetAccessibleFromMainRoom();
-    else if (roomB.isAccessibleFromMainRoom)
-      roomA.SetAccessibleFromMainRoom();
+    public static void ConnectRooms(Room roomA, Room roomB)
+    {
+        if (roomA.isAccessibleFromMainRoom)
+            roomB.SetAccessibleFromMainRoom();
+        else if (roomB.isAccessibleFromMainRoom)
+            roomA.SetAccessibleFromMainRoom();
 
-    roomA.connectedRooms.Add(roomB);
-    roomB.connectedRooms.Add(roomA);
-  }
+        roomA.connectedRooms.Add(roomB);
+        roomB.connectedRooms.Add(roomA);
+    }
 
-  public bool IsConnected(Room otherRoom)
-  {
-    return connectedRooms.Contains(otherRoom);
-  }
+    public bool IsConnected(Room otherRoom)
+    {
+        return connectedRooms.Contains(otherRoom);
+    }
 
-  public int CompareTo(Room other)
-  {
-    return (other.roomSize.CompareTo(roomSize));
-  }
+    public int CompareTo(Room other)
+    {
+        return (other.roomSize.CompareTo(roomSize));
+    }
 }

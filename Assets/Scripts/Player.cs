@@ -4,21 +4,21 @@ using System.Collections;
 public class Player : MonoBehaviour
 {
 
-    Rigidbody rigidbody;
-    Vector3 velocity;
+    Rigidbody _rigidbody;
+    Vector3 _velocity;
 
     void Start()
     {
-        rigidbody = GetComponent<Rigidbody>();
+        _rigidbody = GetComponent<Rigidbody>();
     }
 
     void Update()
     {
-        velocity = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized * 10;
+        _velocity = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized * 10;
     }
 
     void FixedUpdate()
     {
-        rigidbody.MovePosition(rigidbody.position + velocity * Time.fixedDeltaTime);
+        _rigidbody.MovePosition(_rigidbody.position + _velocity * Time.fixedDeltaTime);
     }
 }

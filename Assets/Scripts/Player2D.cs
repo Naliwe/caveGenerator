@@ -3,21 +3,21 @@ using System.Collections;
 
 public class Player2D : MonoBehaviour
 {
-    Rigidbody2D rigidbody;
-    Vector2 velocity;
+    Rigidbody2D _rigidbody;
+    Vector2 _velocity;
 
     void Start()
     {
-        rigidbody = GetComponent<Rigidbody2D>();
+        _rigidbody = GetComponent<Rigidbody2D>();
     }
 
     void Update()
     {
-        velocity = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")).normalized * 10;
+        _velocity = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")).normalized * 10;
     }
 
     void FixedUpdate()
     {
-        rigidbody.MovePosition(rigidbody.position + velocity * Time.fixedDeltaTime);
+        _rigidbody.MovePosition(_rigidbody.position + _velocity * Time.fixedDeltaTime);
     }
 }
