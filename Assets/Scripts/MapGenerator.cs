@@ -5,8 +5,8 @@ using System;
 
 public class MapGenerator : MonoBehaviour
 {
-    public int width;
-    public int height;
+    public int width; /* Valeur de la largeur */
+    public int height; /* Valeur de la hauteur */
 
     public string seed;
     public bool useRandomSeed;
@@ -16,7 +16,7 @@ public class MapGenerator : MonoBehaviour
     [Range(0, 100)]
     public int randomFillPercent;
 
-    int[,] map;
+    int[,] map; /* Map */	
     private LevelMap _levelMap;
 
     void Start()
@@ -24,6 +24,12 @@ public class MapGenerator : MonoBehaviour
         GenerateMap();
     }
 
+	/*
+     * @brief: Mise à jours de la map à chaque clique de souris.
+     * La valeur 0 représente le clique gauche de la souris.
+     *
+     * @return: void
+     */
     void Update()
     {
         if (Input.GetMouseButtonDown(0))
@@ -32,6 +38,13 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
+	/*
+	 * @brief: 
+	 * - Smooth la map
+	 * - Process la map
+	 * - Generation des mesh
+	 * - Creation de la cave
+	 */
     void GenerateMap()
     {
         map = new int[width, height];
@@ -45,12 +58,19 @@ public class MapGenerator : MonoBehaviour
         ProcessMap();
 
         int borderSize = 1;
+		/* hw + borderSize * 2  calcule la valeur de Largeur et Hauteur */
         int[,] borderedMap = new int[width + borderSize * 2, height + borderSize * 2];
 
         for (int x = 0; x < borderedMap.GetLength(0); x++)
         {
             for (int y = 0; y < borderedMap.GetLength(1); y++)
             {
+				/* IsInBorderedMap Vérifie si :
+				*  -> x est supérieur ou égale à borderSize
+				*  -> x est strictement inférieur à width + borderSize
+				*  -> y est supérieur ou égale à borderSize
+				*  -> y est strictement inférieur à height + borderSize
+				*/
                 if (x >= borderSize && x < width + borderSize && y >= borderSize && y < height + borderSize)
                 {
                     borderedMap[x, y] = map[x - borderSize, y - borderSize];
@@ -79,8 +99,9 @@ public class MapGenerator : MonoBehaviour
     void ProcessMap()
     {
         List<List<Coord>> wallRegions = GetRegions(1);
-        int wallThresholdSize = 50;
+        int wallThresholdSize = 50; /* Valeur de contrôle */
 
+		/* Suppression des murs jusqu'à atteindre la valeur de threshold*/
         foreach (List<Coord> wallRegion in wallRegions)
         {
             if (wallRegion.Count < wallThresholdSize)
@@ -96,6 +117,7 @@ public class MapGenerator : MonoBehaviour
         int roomThresholdSize = 50;
         List<Room> survivingRooms = new List<Room>();
 
+		/* Ajout de murs jusqu'à atteindre la valeur de threshold de room */
         foreach (List<Coord> roomRegion in roomRegions)
         {
             if (roomRegion.Count < roomThresholdSize)
@@ -117,19 +139,25 @@ public class MapGenerator : MonoBehaviour
         ConnectClosestRooms(survivingRooms);
     }
 
+	/*
+	 * @brief: Connecter les rooms entre elle
+	 */
     void ConnectClosestRooms(List<Room> allRooms, bool forceAccessibilityFromMainRoom = false)
     {
         List<Room> roomListA = new List<Room>();
         List<Room> roomListB = new List<Room>();
 
+		/*
+		 * Est-ce que les rooms doivent être connecté ?
+		 */
         if (forceAccessibilityFromMainRoom)
         {
             foreach (Room room in allRooms)
             {
                 if (room.isAccessibleFromMainRoom)
-                    roomListB.Add(room);
+                    roomListB.Add(room); /* ajout dans les rooms accessible */
                 else
-                    roomListA.Add(room);
+                    roomListA.Add(room); /* ajout dans les rooms inaccessible */
             }
         }
         else
@@ -147,18 +175,22 @@ public class MapGenerator : MonoBehaviour
 
         foreach (Room roomA in roomListA)
         {
-            if (!forceAccessibilityFromMainRoom)
+            if (!forceAccessibilityFromMainRoom) /* Si les rooms sont connexe */
             {
                 possibleConnectionFound = false;
-                if (roomA.connectedRooms.Count > 0)
+                if (roomA.connectedRooms.Count > 0) /* Si le compte est bon */
                     continue;
             }
 
+			/* Parcours les rooms accessible */
             foreach (Room roomB in roomListB)
             {
                 if (roomA == roomB || roomA.IsConnected(roomB))
                     continue;
 
+				/* bestTile = entrée de la room
+				 * bestRoom = deux rooms à connecter
+				 */
                 for (int tileIndexA = 0; tileIndexA < roomA.edgeTiles.Count; tileIndexA++)
                 {
                     for (int tileIndexB = 0; tileIndexB < roomB.edgeTiles.Count; tileIndexB++)
@@ -182,12 +214,19 @@ public class MapGenerator : MonoBehaviour
                 }
             }
 
+			/* Création d'un passage si on trouve une connection
+			 * et qu'on ne veux pas forcement que les rooms soient connexe
+			 */
             if (possibleConnectionFound && !forceAccessibilityFromMainRoom)
             {
                 CreatePassage(bestRoomA, bestRoomB, bestTileA, bestTileB);
             }
         }
 
+		/* Création d'un passage si on trouve une connection
+		 * et qu'on veux que les rooms soient connexe
+		 * ajout de la connexion de room.
+		 */
         if (possibleConnectionFound && forceAccessibilityFromMainRoom)
         {
             CreatePassage(bestRoomA, bestRoomB, bestTileA, bestTileB);
@@ -198,6 +237,10 @@ public class MapGenerator : MonoBehaviour
             ConnectClosestRooms(allRooms, true);
     }
 
+	/*
+	 * @brief: On lie deux rooms entre elle en traçant une ligne droite
+	 * entre les deux points d'entrée les plus proches
+     */
     void CreatePassage(Room roomA, Room roomB, Coord tileA, Coord tileB)
     {
         Room.ConnectRooms(roomA, roomB);
@@ -287,6 +330,10 @@ public class MapGenerator : MonoBehaviour
         return new Vector3(-width / 2 + .5f + tile.tileX, 2, -height / 2 + .5f + tile.tileY);
     }
 
+	/*
+	 * @brief: Récupérer une liste de région
+	 * créer des régions de murs ou de rooms selon le tileType
+	 */
     List<List<Coord>> GetRegions(int tileType)
     {
         List<List<Coord>> regions = new List<List<Coord>>();
@@ -312,6 +359,12 @@ public class MapGenerator : MonoBehaviour
         return regions;
     }
 
+	/*
+	 * @brief: Application du Marching Squares à une origine x,y
+	 * 
+	 * Remplissage de la zone comme un pot de peinture sur paint
+	 * 
+	 */
     List<Coord> GetRegionTiles(int startX, int startY)
     {
         List<Coord> tiles = new List<Coord>();
@@ -377,6 +430,13 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
+	/*
+	 * @brief: Premiere iteration de l'algorithme
+	 * 
+	 * Une cellule de notre map dont la valeur est conditionné par ce qui l'entoure.
+	 * map[x, y] est set à 0 ou 1 selon notre condition
+	 * 
+	 */
     void SmoothMap()
     {
         for (int x = 0; x < width; x++)
@@ -393,6 +453,12 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
+	/*
+	 * @brief: Calcule le nombre de mur voisin
+	 * 
+	 * @return: retourne le nombre de mur voisin
+	 * 
+	 */
     int GetSurroundingWallCount(int gridX, int gridY)
     {
         int wallCount = 0;
